@@ -1,12 +1,16 @@
 package com.junit_3;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +57,26 @@ public class UserControllerTest {
 		.andExpect(jsonPath("$.id").value(10))
 		.andExpect(jsonPath("$.name").value("Alice"));
 
+	}
+	@Test
+	public void updateUser_Test() throws Exception {
+		when(userService.updateUser(eq(1), any(User.class))).thenReturn(Optional.of(new User(1,"Sam")) );
+		
+		mockMvc.perform(put("/users/1")
+		.contentType(MediaType.APPLICATION_JSON)
+		.content("{\"id\":1,\"name\":\"Sam\"}"))
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.id").value(1))
+		.andExpect(jsonPath("$.name").value("Sam"));
+	}
+	@Test
+	public void updateUser_Test_NotFound() throws Exception {
+		when(userService.updateUser(eq(99), any(User.class))).thenReturn(Optional.empty());
+		
+		mockMvc.perform(put("/users/99")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"id\":99,\"name\":\"Sam\"}"))
+		.andExpect(status().isNotFound());
 	}
 
 }
